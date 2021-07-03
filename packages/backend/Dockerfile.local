@@ -1,0 +1,18 @@
+FROM node:12-alpine
+
+RUN mkdir -p /svr/app
+
+WORKDIR /svr/app
+
+RUN npm i -g @nestjs/cli --silent
+
+COPY package.json .
+COPY package-lock.json .
+
+RUN npm install --silent
+
+COPY . .
+
+EXPOSE $BACKEND_PORT
+
+CMD ["npm", "run", "start:debug"]

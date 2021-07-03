@@ -1,0 +1,9 @@
+{
+  "name": "fb-login-react-native-nest",
+  "description": "An example project that contains login with Facebook in React Native app.",
+  "author": "Montacer Dkhilali",
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}

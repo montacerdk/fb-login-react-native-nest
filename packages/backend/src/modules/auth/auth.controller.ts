@@ -1,0 +1,36 @@
+import { ApiTags } from "@nestjs/swagger";
+import {
+  UseInterceptors,
+  ValidationPipe,
+  Controller,
+  Body,
+  Post,
+} from "@nestjs/common";
+
+import { SentryInterceptor } from "@common/sentry.interceptor";
+import { SignInDto } from "@modules/auth/dto/sign-in.dto";
+import { AuthService } from "@modules/auth/auth.service";
+import { SignUpDto } from "@modules/auth/dto/sign-up.dto";
+import { UserEntity } from "@entities/user.entity";
+import { IJwtToken } from "@common/interfaces";
+
+@Controller("/api/auth")
+@ApiTags("Authentication")
+@UseInterceptors(SentryInterceptor)
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post("/signIn")
+  public async signIn(
+    @Body(ValidationPipe) params: SignInDto
+  ): Promise<IJwtToken> {
+    return this.authService.signIn(params);
+  }
+
+  @Post("/signUp")
+  public async signUp(
+    @Body(ValidationPipe) params: SignUpDto
+  ): Promise<UserEntity> {
+    return this.authService.signUp(params);
+  }
+}
