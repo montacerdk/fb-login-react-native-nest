@@ -8,6 +8,7 @@ import {
 
 import { SignInDto } from "@modules/auth/dto/sign-in.dto";
 import { UserEntity } from "@entities/user.entity";
+import { UserRole } from "@common/data";
 
 @EntityRepository(UserEntity)
 export class UserRepository extends Repository<UserEntity> {
@@ -42,7 +43,7 @@ export class UserRepository extends Repository<UserEntity> {
       user.salt = await bcrypt.genSalt();
       user.password = await this.hashPassword(user.password, user.salt);
     }
-    return await this.save(user);
+    return await this.save({ ...user, role: UserRole.Admin });
   }
 
   public hashPassword(pwd: string, salt: string): Promise<string> {

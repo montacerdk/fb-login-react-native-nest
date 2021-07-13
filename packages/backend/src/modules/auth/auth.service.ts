@@ -1,12 +1,16 @@
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import axios from "axios";
 
-import { SignInDto } from "@modules/auth/dto/sign-in.dto";
-import { SignUpDto } from "@modules/auth/dto/sign-up.dto";
 import { UserRepository } from "@repos/users.repository";
 import { UserEntity } from "@entities/user.entity";
 import { IJwtToken } from "@common/interfaces";
+import {
+  ContinueWithFacebookDto,
+  SignInDto,
+  SignUpDto,
+} from "@modules/auth/dto";
 
 @Injectable()
 export class AuthService {
@@ -25,6 +29,39 @@ export class AuthService {
 
   public async signUp(params: SignUpDto): Promise<UserEntity> {
     return await this.getUserRepository().signUp(params);
+  }
+
+  public async continueWithFacebook(
+    params: ContinueWithFacebookDto
+  ): Promise<IJwtToken> {
+    const {
+      data: {
+        id: { providerId },
+      },
+    } = await axios.get(
+      `${process.env.FACEBOOK_ME_URL}?access_token=${params.accessToken}`
+    );
+    console.log("FACEBOOK_ME_URL =========>", process.env.FACEBOOK_ME_URL);
+    console.log("providerId =========>", providerId);
+    if (params.id !== providerId) {
+      throw new UnauthorizedException("Invalid user id");
+    } else {
+      let user = await this.userRepository
+        .createQueryBuilder("user")
+        .where("user.email = :email", { email: params.email })
+        .andWhere("user.fbProviderId = :providerId", { providerId })
+        .getOne();
+      if (!user) {
+        user = await this.getUserRepository().signUp({
+          firstName: params.firstName,
+          lastName: params.lastName,
+          fbProviderId: providerId,
+          email: params.email,
+        });
+      }
+      const accessToken = this.jwtService.sign({ id: user.id });
+      return { accessToken };
+    }
   }
 
   public findUser(id: number): Promise<UserEntity> {

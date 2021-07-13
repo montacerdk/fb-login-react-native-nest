@@ -8,11 +8,14 @@ import {
 } from "@nestjs/common";
 
 import { SentryInterceptor } from "@common/sentry.interceptor";
-import { SignInDto } from "@modules/auth/dto/sign-in.dto";
 import { AuthService } from "@modules/auth/auth.service";
-import { SignUpDto } from "@modules/auth/dto/sign-up.dto";
 import { UserEntity } from "@entities/user.entity";
 import { IJwtToken } from "@common/interfaces";
+import {
+  ContinueWithFacebookDto,
+  SignUpDto,
+  SignInDto,
+} from "@modules/auth/dto";
 
 @Controller("/api/auth")
 @ApiTags("Authentication")
@@ -32,5 +35,12 @@ export class AuthController {
     @Body(ValidationPipe) params: SignUpDto
   ): Promise<UserEntity> {
     return this.authService.signUp(params);
+  }
+
+  @Post("/continueWithFacebook")
+  public async continueWithFacebook(
+    @Body(ValidationPipe) params: ContinueWithFacebookDto
+  ): Promise<IJwtToken> {
+    return this.authService.continueWithFacebook(params);
   }
 }

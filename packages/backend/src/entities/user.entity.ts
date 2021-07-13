@@ -23,10 +23,13 @@ export class UserEntity extends Base {
   @Column({ name: "role", type: "enum", enum: UserRole })
   public role: UserRole;
 
-  @Column()
+  @Column({ name: "fb_provider_id", nullable: true, unique: true })
+  public fbProviderId: string;
+
+  @Column({ select: false })
   password?: string;
 
-  @Column()
+  @Column({ select: false })
   salt?: string;
 
   constructor(user?: Partial<UserEntity>) {
