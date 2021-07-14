@@ -26,10 +26,10 @@ export class UserEntity extends Base {
   @Column({ name: "fb_provider_id", nullable: true, unique: true })
   public fbProviderId: string;
 
-  @Column({ select: false })
+  @Column({ nullable: true, select: false })
   password?: string;
 
-  @Column({ select: false })
+  @Column({ nullable: true, select: false })
   salt?: string;
 
   constructor(user?: Partial<UserEntity>) {

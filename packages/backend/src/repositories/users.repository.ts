@@ -19,6 +19,17 @@ export class UserRepository extends Repository<UserEntity> {
   public async signIn({ email, password }: SignInDto): Promise<UserEntity> {
     const user = await this.createQueryBuilder("user")
       .where("user.email = :email", { email })
+      .select([
+        "user.fbProviderId",
+        "user.firstName",
+        "user.lastName",
+        "user.password",
+        "user.email",
+        "user.salt",
+        "user.role",
+        "user.salt",
+        "user.id",
+      ])
       .getOne();
     if (!user) {
       throw new NotFoundException(`User with this email ${email} not found`);
@@ -31,12 +42,16 @@ export class UserRepository extends Repository<UserEntity> {
     if (!checkCredentials) {
       throw new BadRequestException("Bad Credentials.");
     }
+    delete user.salt;
+    delete user.password;
     return user;
   }
 
   public async signUp(user: Partial<UserEntity>): Promise<UserEntity> {
-    const check = await this.findOne({ email: user.email });
-    if (check) {
+    const checkedUser = await this.createQueryBuilder("user")
+      .where("user.email = :email", { email: user.email })
+      .getOne();
+    if (checkedUser) {
       throw new ConflictException("User already exist.");
     }
     if (!!user.password) {

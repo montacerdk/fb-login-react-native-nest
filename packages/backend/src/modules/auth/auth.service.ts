@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import axios from "axios";
 
@@ -16,6 +17,7 @@ import {
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository
   ) {}
@@ -34,15 +36,12 @@ export class AuthService {
   public async continueWithFacebook(
     params: ContinueWithFacebookDto
   ): Promise<IJwtToken> {
-    const {
-      data: {
-        id: { providerId },
-      },
-    } = await axios.get(
-      `${process.env.FACEBOOK_ME_URL}?access_token=${params.accessToken}`
+    const facebookData = await axios.get(
+      `${this.configService.get("FACEBOOK_ME_URL")}?access_token=${
+        params.accessToken
+      }`
     );
-    console.log("FACEBOOK_ME_URL =========>", process.env.FACEBOOK_ME_URL);
-    console.log("providerId =========>", providerId);
+    const providerId = facebookData.data.id;
     if (params.id !== providerId) {
       throw new UnauthorizedException("Invalid user id");
     } else {
